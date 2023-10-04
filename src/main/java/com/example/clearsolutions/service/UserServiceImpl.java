@@ -63,18 +63,6 @@ public class UserServiceImpl {
     public static User deleteUser (Long userId) {
         return users.remove(userId);
     }
-
-    public User updateAllFieldsUser(@PathVariable Long userId, User user) throws SQLException {
-        User existingUser = getUserById(userId);
-
-        existingUser.setId(user.getId());
-        existingUser.setEmail(user.getEmail());
-        existingUser.setFirstName(user.getFirstName());
-        existingUser.setLastName(user.getLastName());
-        existingUser.setBirthDate(user.getBirthDate());
-        existingUser.setAddress(user.getAddress());
-        return users.put(existingUser.getId(), existingUser);
-    }
     public static User getUserById(Long number) throws SQLException {
         HashMap<Long,User> getUser = new HashMap<Long, User>();
         if (getUser.containsKey(number)) {

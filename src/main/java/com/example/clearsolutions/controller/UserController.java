@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -39,6 +40,11 @@ public class UserController {
     @PutMapping("/updateAllFields/{userId}")
     public User updateAllFieldsUser(@PathVariable Long userId, User user) throws SQLException {
         return userService.updateAllFields(userId, user);
+    }
+
+    @GetMapping("/getInRange")
+    public List<User> getUserByBirthday(@RequestParam Date from, @RequestParam Date to) {
+        return userService.findByBirthdayBetween(from, to);
     }
 }
 //{

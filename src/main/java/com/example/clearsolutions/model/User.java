@@ -18,11 +18,11 @@ public class User {
     private String lastName;
 
     @Past
-    private LocalDate birthDate;
+    private Date birthDate;
 
     private String address;
 
-    public User(Long id, String email, String firstName, String lastName, LocalDate birthDate, String address) {
+    public User(Long id, String email, String firstName, String lastName, Date birthDate, String address) {
         this.id = id;
         this.email = email;
         this.firstName = firstName;
@@ -67,11 +67,11 @@ public class User {
         this.lastName = lastName;
     }
 
-    public LocalDate getBirthDate() {
+    public Date getBirthDate() {
         return birthDate;
     }
 
-    public void setBirthDate(LocalDate birthDate) {
+    public void setBirthDate(Date birthDate) {
         this.birthDate = birthDate;
     }
 

@@ -2,12 +2,11 @@ package com.example.clearsolutions.controller;
 
 import com.example.clearsolutions.model.User;
 import com.example.clearsolutions.service.UserServiceImpl;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
+import java.sql.SQLException;
 import java.util.List;
 
 @RestController
@@ -19,26 +18,35 @@ public class UserController {
     public UserController(UserServiceImpl userService) {
         this.userService = userService;
     }
-
-    @PostMapping("/create")
-    public ResponseEntity<User> create(@Valid @RequestBody User user) {
-        User createdUser = userService.createUser(user);
-
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
-    }
     @GetMapping("/all")
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userService.getAllUsers();
         return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
-    @PostMapping("/add")
+    @PostMapping("/create")
     public User addUser(@RequestBody User user) {
-        return userService.addUser(user);
+        return userService.createUser(user);
     }
     @DeleteMapping("/delete/{userId}")
-    public User deleteUser(@PathVariable Long user) {
-        return userService.deleteUser(user);
+    public User deleteUser(@PathVariable Long userId) {
+        return userService.deleteUser(userId);
+    }
+    @PatchMapping("/update/{userId}")
+    public User updateUser(@PathVariable Long userId,String email) throws SQLException {
+        return userService.update(userId, email);
+    }
+    @PutMapping("/updateAllFields/{userId}")
+    public User updateAllFieldsUser(@PathVariable Long userId, User user) throws SQLException {
+        return userService.updateAllFields(userId, user);
     }
 }
+//{
+//        "id": 1,
+//        "email": "user@example.com",
+//        "firstName": "John",
+//        "lastName": "Doe",
+//        "birthDate": "1990-01-15",
+//        "address": "123 Main St"
+//        }
 

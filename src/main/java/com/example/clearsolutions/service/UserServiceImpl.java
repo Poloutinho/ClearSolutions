@@ -2,20 +2,23 @@ package com.example.clearsolutions.service;
 
 import com.example.clearsolutions.model.User;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl {
-    private static Map<Long, User> users = new HashMap<>();
-    private static Long index = 2L;
 
-    static {
-        User user1 = new User (1L, "Jonh@gmail.com", "John", "Johnson", LocalDate.of(2000, 5, 14), "Kyiv");
-        User user2 = new User (2L, "Alice@gmail.com", "Alice", "Stockton", LocalDate.of(1994, 7, 4), "Kyiv");
-    }
+
+    private static final String EMAIL_PATTERN = "^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$";
+    private static Map<Long, User> users = new HashMap<>();
+
+    private static Long index = 0L;
 
     public static User addUser (User user) {
         index += 1;
@@ -29,7 +32,7 @@ public class UserServiceImpl {
     }
 
     public User createUser(User user) {
-        LocalDate birthDate = user.getBirthDate();
+        Date birthDate = user.getBirthDate();
         if (!isUserOldEnough(birthDate)) {
             throw new IllegalArgumentException("User must be at least 18 years old.");
         }
@@ -44,19 +47,79 @@ public class UserServiceImpl {
         return users.size() + 1L;
     }
 
-    private static boolean isUserOldEnough(LocalDate birthDate) {
+    private static boolean isUserOldEnough(Date birthDate) {
         LocalDate currentDate = LocalDate.now();
-        int age = Period.between(birthDate, currentDate).getYears();
+        LocalDate birthLocalDate = birthDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        int age = Period.between(birthLocalDate, currentDate).getYears();
         return age >= 18;
     }
 
-    public static User updateUser (Long userId, User user) {
-        user.setId(userId);
-        users.put(userId, user);
+    public static User updateUser (User user) {
+        user.setId(user.getId());
+        users.put(user.getId(), user);
         return user;
     }
 
     public static User deleteUser (Long userId) {
         return users.remove(userId);
+    }
+
+    public User updateAllFieldsUser(@PathVariable Long userId, User user) throws SQLException {
+        User existingUser = getUserById(userId);
+
+        existingUser.setId(user.getId());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setFirstName(user.getFirstName());
+        existingUser.setLastName(user.getLastName());
+        existingUser.setBirthDate(user.getBirthDate());
+        existingUser.setAddress(user.getAddress());
+        return users.put(existingUser.getId(), existingUser);
+    }
+    public static User getUserById(Long number) throws SQLException {
+        HashMap<Long,User> getUser = new HashMap<Long, User>();
+        if (getUser.containsKey(number)) {
+            System.out.println(getUser);
+        }
+        return null;
+    }
+
+    public User update(Long userId, String email) throws SQLException {
+        Optional<User> userToUpdate = Optional.ofNullable(getUserById(userId));
+        if (userToUpdate.isPresent()) {
+            if (email.matches(EMAIL_PATTERN)) {
+                userToUpdate.get().setEmail(email);
+                users.put(userToUpdate.get().getId(), userToUpdate.get());
+                return userToUpdate.get();
+            } else {
+                throw new IllegalArgumentException("Illegal argument for user");
+            }
+        } else {
+            throw new NoSuchElementException("User not found");
+        }
+    }
+
+    public User updateAllFields(@PathVariable Long userId, User user) throws SQLException {
+        Optional<User> userFullUpdate = Optional.ofNullable(getUserById(userId));
+        if (userFullUpdate.isPresent()) {
+            if ((LocalDate.now().minusYears(user.getBirthDate().getYear()).getYear()) >= 18 &&
+                    user.getEmail().matches(EMAIL_PATTERN)) {
+                userFullUpdate.get().setEmail(user.getEmail());
+                userFullUpdate.get().setFirstName(user.getFirstName());
+                userFullUpdate.get().setLastName(user.getLastName());
+                userFullUpdate.get().setBirthDate(user.getBirthDate());
+                userFullUpdate.get().setAddress(user.getAddress());
+                users.put(userFullUpdate.get().getId(), userFullUpdate.get());
+                return userFullUpdate.get();
+            } else {
+                throw new IllegalArgumentException("Illegal argument for user");
+            }
+        } else {
+            throw new NoSuchElementException("User not found");
+        }
+    }
+    public List<User> findByBirthdayBetween(Date from, Date to) {
+        return users.values().stream()
+                .filter(user -> user.getBirthDate().after(from) && user.getBirthDate().before(to))
+                .collect(Collectors.toList());
     }
 }

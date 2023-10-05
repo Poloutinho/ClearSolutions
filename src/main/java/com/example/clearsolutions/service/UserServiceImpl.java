@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
@@ -19,13 +21,6 @@ public class UserServiceImpl {
     private static Map<Long, User> users = new HashMap<>();
 
     private static Long index = 0L;
-
-    public static User addUser (User user) {
-        index += 1;
-        user.setId(index);
-        users.put(index, user);
-        return user;
-    }
 
     public static List<User> getAllUsers () {
         return new ArrayList<>(users.values());
@@ -54,33 +49,19 @@ public class UserServiceImpl {
         return age >= 18;
     }
 
-    public static User updateUser (User user) {
-        user.setId(user.getId());
-        users.put(user.getId(), user);
-        return user;
-    }
-
     public static User deleteUser (Long userId) {
         return users.remove(userId);
     }
-    public static User getUserById(Long number) throws SQLException {
-        HashMap<Long,User> getUser = new HashMap<Long, User>();
-        if (getUser.containsKey(number)) {
-            System.out.println(getUser);
-        }
-        return null;
+    public static User getUserById(Long userId) throws SQLException {
+        return users.get(userId);
     }
 
     public User update(Long userId, String email) throws SQLException {
         Optional<User> userToUpdate = Optional.ofNullable(getUserById(userId));
         if (userToUpdate.isPresent()) {
-            if (email.matches(EMAIL_PATTERN)) {
                 userToUpdate.get().setEmail(email);
                 users.put(userToUpdate.get().getId(), userToUpdate.get());
                 return userToUpdate.get();
-            } else {
-                throw new IllegalArgumentException("Illegal argument for user");
-            }
         } else {
             throw new NoSuchElementException("User not found");
         }
@@ -105,9 +86,14 @@ public class UserServiceImpl {
             throw new NoSuchElementException("User not found");
         }
     }
-    public List<User> findByBirthdayBetween(Date from, Date to) {
-        return users.values().stream()
-                .filter(user -> user.getBirthDate().after(from) && user.getBirthDate().before(to))
-                .collect(Collectors.toList());
+    public List<User> findByBirthdayRange(Date from, Date to) {
+        List<User> result = new ArrayList<>();
+
+        for (User user : users.values()) {
+            if (user.getBirthDate().after(from) && user.getBirthDate().before(to)) {
+                result.add(user);
+            }
+        }
+        return result;
     }
 }

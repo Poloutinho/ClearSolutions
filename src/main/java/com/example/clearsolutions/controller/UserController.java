@@ -2,11 +2,16 @@ package com.example.clearsolutions.controller;
 
 import com.example.clearsolutions.model.User;
 import com.example.clearsolutions.service.UserServiceImpl;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
@@ -34,7 +39,7 @@ public class UserController {
         return userService.deleteUser(userId);
     }
     @PatchMapping("/update/{userId}")
-    public User updateUser(@PathVariable Long userId,String email) throws SQLException {
+    public User updateUser(@PathVariable Long userId,@RequestBody @Email @NonNull String email) throws SQLException {
         return userService.update(userId, email);
     }
     @PutMapping("/updateAllFields/{userId}")
@@ -43,8 +48,8 @@ public class UserController {
     }
 
     @GetMapping("/getInRange")
-    public List<User> getUserByBirthday(@RequestParam Date from, @RequestParam Date to) {
-        return userService.findByBirthdayBetween(from, to);
+    public List<User> getUserByBirthday(@RequestParam("from") @DateTimeFormat(pattern = "yyyy-MM-dd") Date from, @RequestParam(value = "to", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date to) {
+        return userService.findByBirthdayRange(from, to);
     }
 }
 //{
